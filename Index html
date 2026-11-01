@@ -1,0 +1,187 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS FUND | Terraform Command Center</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#08111f;color:#e8f0ff;
+  font-family:Arial,sans-serif
+}
+header{
+  padding:24px 16px;background:#101e32;
+  border-bottom:1px solid #263c57
+}
+header h1{margin:0;color:#39b9ff}
+header p{color:#9eb1c9;margin-bottom:0}
+.container{max-width:950px;margin:auto;padding:18px}
+input{
+  width:100%;padding:14px;border-radius:10px;
+  border:1px solid #344b68;background:#101e32;
+  color:white;font-size:16px;margin-bottom:16px
+}
+.section{
+  background:#101e32;border:1px solid #263c57;
+  border-radius:12px;padding:16px;margin-bottom:15px
+}
+.section h2{font-size:17px;color:#39b9ff;margin-top:0}
+.command{
+  background:#07101c;padding:13px;border-radius:8px;
+  margin:10px 0;overflow-wrap:anywhere
+}
+pre{
+  white-space:pre-wrap;overflow-wrap:anywhere;
+  color:#b9d5f5;font-size:13px;margin:0 0 12px
+}
+button{
+  border:0;border-radius:7px;padding:9px 14px;
+  background:#0876d1;color:white;font-weight:bold;
+  cursor:pointer
+}
+button:hover{background:#1599ed}
+.danger{background:#9e3434}
+.note{color:#ffcf78;font-size:13px;line-height:1.6}
+footer{text-align:center;color:#7188a5;padding:25px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>◆ NEXUS FUND</h1>
+  <p>Terraform VPS Command Center</p>
+</header>
+
+<div class="container">
+
+<input id="search" placeholder="Search commands..."
+ oninput="searchCommands()">
+
+<div class="section">
+<h2>01. System Setup</h2>
+<div class="command">
+<pre>sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git unzip nano gpg</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+</div>
+
+<div class="section">
+<h2>02. Terraform Installation</h2>
+<div class="command">
+<pre>sudo apt install -y curl wget gpg lsb-release
+
+wget -O - https://apt.releases.hashicorp.com/gpg | \
+sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | \
+sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+sudo apt update
+sudo apt install -y terraform
+terraform version</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+</div>
+
+<div class="section">
+<h2>03. Docker Installation</h2>
+<div class="command">
+<pre>sudo apt install -y docker.io docker-compose-v2
+sudo systemctl enable --now docker
+sudo docker run hello-world
+docker --version</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+</div>
+
+<div class="section">
+<h2>04. NEXUS FUND Project</h2>
+<div class="command">
+<pre>cd /opt/nexus-fund/nexus-fund-terraform-local
+ls -la
+nano terraform.tfvars</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+</div>
+
+<div class="section">
+<h2>05. Terraform Commands</h2>
+<div class="command">
+<pre>terraform fmt -recursive
+terraform init
+terraform validate
+terraform plan</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+<div class="command">
+<pre>terraform apply</pre>
+<button onclick="copyCommand(this)">Copy</button>
+<p class="note">সতর্কতা: Apply চালানোর আগে Terraform Plan যাচাই করুন।</p>
+</div>
+</div>
+
+<div class="section">
+<h2>06. Application Management</h2>
+<div class="command">
+<pre>docker ps
+docker logs -f nexus-fund-app
+docker restart nexus-fund-app
+curl http://127.0.0.1:3000/api/health</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+</div>
+
+<div class="section">
+<h2>07. Admin Dashboard</h2>
+<div class="command">
+<pre>docker exec -it nexus-fund-app npm run create-admin</pre>
+<button onclick="copyCommand(this)">Copy</button>
+</div>
+<p>Dashboard: http://127.0.0.1:3000/admin.html</p>
+</div>
+
+<div class="section">
+<h2>08. Destroy Infrastructure</h2>
+<div class="command">
+<pre>terraform plan -destroy
+terraform destroy</pre>
+<button class="danger" onclick="confirmDestroy(this)">Copy Destroy Commands</button>
+<p class="note">সতর্কতা: Infrastructure মুছে যেতে পারে। Database backup ছাড়া চালাবেন না।</p>
+</div>
+</div>
+
+</div>
+
+<footer>NEXUS FUND | Infrastructure Command Center</footer>
+
+<script>
+function copyCommand(button){
+  const text=button.parentElement.querySelector("pre").innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    button.innerText="Copied!";
+    setTimeout(()=>button.innerText="Copy",1500);
+  }).catch(()=>{
+    alert("Copy হয়নি। কমান্ডটি ম্যানুয়ালি কপি করুন।");
+  });
+}
+
+function confirmDestroy(button){
+  if(confirm("সতর্কতা! Infrastructure destroy করার কমান্ড কপি করবেন?")){
+    copyCommand(button);
+  }
+}
+
+function searchCommands(){
+  const query=document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll(".section").forEach(section=>{
+    section.style.display=section.innerText.toLowerCase().includes(query)
+      ? "block":"none";
+  });
+}
+</script>
+
+</body>
+</html>
